@@ -239,7 +239,7 @@ export async function share(req, res) {
 
         // Validate recipt
         let reciever = await findUser(recipt);
-        if(reciever) throw new Error(`${recipt} is not a user`);
+        if(!reciever) throw new Error(`${recipt} is not a user`);
        //Debit
         await deductTokens(gmail, removeT, `Shared ${amount} to ${recipt}`);
         await deductTokens(
