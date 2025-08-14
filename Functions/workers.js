@@ -252,7 +252,7 @@ export async function share(req, res) {
 
         res.send({
             success: true,
-            message: `You just shared ${amount} tokens to user  ${recipt}`
+            message: `You just shared ${amount} tokens to user  ${recipt}. And got charged for Sharing ${amount} to ${recipt}.`
         });
     } catch (err) {
         console.log(err.message);
