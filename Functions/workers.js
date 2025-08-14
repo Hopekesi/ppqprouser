@@ -1,4 +1,3 @@
-
 import {
     isPhone,
     isString,
@@ -63,7 +62,7 @@ export async function login(req, res) {
             gmail: user.gmail,
             password: user.password,
             id: user._id,
-            wallet:user.wallet,
+            wallet: user.wallet,
             tokens: user.tokens,
             avatar: user.avatar
         };
@@ -85,7 +84,9 @@ export async function login(req, res) {
 export async function forgotPassword(req, res) {
     try {
         //Validate input
-        const { gmail } = req.params;
+        const {
+            gmail
+        } = req.params;
         isGmail(gmail);
         //Validate gmail is ours
         let user = await findUser(gmail);
@@ -109,7 +110,11 @@ export async function Changepassword(req, res) {
     try {
         //Validate gmail, OTP , newpassword
 
-        let { gmail, OTP, password } = req.params;
+        let {
+            gmail,
+            OTP,
+            password
+        } = req.params;
         isGmail(gmail);
         isNumber(OTP);
         isString(password);
@@ -145,7 +150,11 @@ export async function Changepassword(req, res) {
 
 export async function auth(req, res) {
     try {
-        let { gmail, password, request } = req.params;
+        let {
+            gmail,
+            password,
+            request
+        } = req.params;
         isString(password);
         isString(request);
         isGmail(gmail);
@@ -171,7 +180,10 @@ export async function auth(req, res) {
 export async function wantToken(req, res) {
     try {
         //Validate gmail is string
-        const { gmail, price } = req.params;
+        const {
+            gmail,
+            price
+        } = req.params;
         isNumber(price);
         isGmail(gmail);
         //is a user
@@ -200,34 +212,43 @@ export async function wantToken(req, res) {
 
 export async function share(req, res) {
     try {
-        let { gmail, amount, recipt } = req.params;
+        let {
+            gmail,
+            amount,
+            recipt
+        } = req.params;
         isString(gmail);
         isString(recipt);
         amount = isNumber(amount);
 
         if (amount < 1) throw new Error(`You can share ${amount} tokens`);
-        let user = await findUser(gmail);
+        //Add Validate password
+        let user = await findUserSecured(gmail, password);
+
         if (!user) throw new Error(`${gmail} is not a user`);
-        if (user.tokens < amount + 2)
-            throw new Error(
-                `Insufficient tokens, you need more than ${
-                    amount + 2
-                } to share.`
-            );
+
+        if (user.tokens < amount + 2) throw new Error(
+            `Insufficient tokens, you need more than ${
+            amount + 2
+            } to share.`
+        );
+
         let removeT = -1 * amount;
+
+        // Validate recipt
+        let user = await findUser(recipt);
+       //Debit
         await deductTokens(gmail, removeT, `Shared ${amount} to ${recipt}`);
         await deductTokens(
             gmail,
             -2,
             `Charge for Sharing ${amount} to ${recipt}`
         );
+        //Credit
         await deductTokens(recipt, amount, `Recieved ${amount} from ${gmail}`);
-
-        user = await findUser(gmail);
 
         res.send({
             success: true,
-            info: user,
             message: `You just shared ${amount} tokens to user  ${recipt}`
         });
     } catch (err) {
