@@ -215,10 +215,12 @@ export async function share(req, res) {
         let {
             gmail,
             amount,
-            recipt
+            recipt,
+            password
         } = req.params;
         isString(gmail);
         isString(recipt);
+        isString(password);
         amount = isNumber(amount);
 
         if (amount < 1) throw new Error(`You can share ${amount} tokens`);
