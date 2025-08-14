@@ -236,7 +236,8 @@ export async function share(req, res) {
         let removeT = -1 * amount;
 
         // Validate recipt
-        let user = await findUser(recipt);
+        let reciever = await findUser(recipt);
+        if(reciever) throw new Error(`${recipt} is not a user`);
        //Debit
         await deductTokens(gmail, removeT, `Shared ${amount} to ${recipt}`);
         await deductTokens(
