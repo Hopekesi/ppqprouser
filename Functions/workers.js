@@ -17,7 +17,8 @@ import {
     findUserSecured,
     findUser,
     changeOtp,
-    deductTokens
+    deductTokens,
+    PermiumUser
 } from "./MongoFuncs.js";
 
 export async function signup(req, res) {
@@ -39,10 +40,6 @@ export async function signup(req, res) {
         });
     }
 }
-
-
-
-
 
 export async function login(req, res) {
     try {
@@ -84,9 +81,7 @@ export async function login(req, res) {
 export async function forgotPassword(req, res) {
     try {
         //Validate input
-        const {
-            gmail
-        } = req.params;
+        const { gmail } = req.params;
         isGmail(gmail);
         //Validate gmail is ours
         let user = await findUser(gmail);
@@ -110,11 +105,7 @@ export async function Changepassword(req, res) {
     try {
         //Validate gmail, OTP , newpassword
 
-        let {
-            gmail,
-            OTP,
-            password
-        } = req.params;
+        let { gmail, OTP, password } = req.params;
         isGmail(gmail);
         isNumber(OTP);
         isString(password);
@@ -150,11 +141,7 @@ export async function Changepassword(req, res) {
 
 export async function auth(req, res) {
     try {
-        let {
-            gmail,
-            password,
-            request
-        } = req.params;
+        let { gmail, password, request } = req.params;
         isString(password);
         isString(request);
         isGmail(gmail);
@@ -180,10 +167,7 @@ export async function auth(req, res) {
 export async function wantToken(req, res) {
     try {
         //Validate gmail is string
-        const {
-            gmail,
-            price
-        } = req.params;
+        const { gmail, price } = req.params;
         isNumber(price);
         isGmail(gmail);
         //is a user
@@ -212,12 +196,7 @@ export async function wantToken(req, res) {
 
 export async function share(req, res) {
     try {
-        let {
-            gmail,
-            amount,
-            recipt,
-            password
-        } = req.params;
+        let { gmail, amount, recipt, password } = req.params;
         isString(gmail);
         isString(recipt);
         isString(password);
@@ -229,18 +208,19 @@ export async function share(req, res) {
 
         if (!user) throw new Error(`${gmail} is not a user`);
 
-        if (user.tokens < amount + 2) throw new Error(
-            `Insufficient tokens, you need more than ${
-            amount + 2
-            } to share.`
-        );
+        if (user.tokens < amount + 2)
+            throw new Error(
+                `Insufficient tokens, you need more than ${
+                    amount + 2
+                } to share.`
+            );
 
         let removeT = -1 * amount;
 
         // Validate recipt
         let reciever = await findUser(recipt);
-        if(!reciever) throw new Error(`${recipt} is not a user`);
-       //Debit
+        if (!reciever) throw new Error(`${recipt} is not a user`);
+        //Debit
         await deductTokens(gmail, removeT, `Shared ${amount} to ${recipt}`);
         await deductTokens(
             gmail,
@@ -259,6 +239,22 @@ export async function share(req, res) {
         res.send({
             success: false,
             message: `Falied to share : ${err.message}`
+        });
+    }
+}
+
+export async function transFunc(req, res) {
+    try {
+        const user = await PermiumUser.findById(req.params.id);
+        let transactions = user.details.Transactions;
+        res.send({
+            success: true,
+            message: transactions
+        });
+    } catch (err) {
+        res.send({
+            success: false,
+            message: err.message
         });
     }
 }

@@ -11,7 +11,8 @@ import {
   Changepassword,
   wantToken,
   auth,
-  share
+  share,
+  transFunc
 } from "./Functions/workers.js";
 
 config();
@@ -48,6 +49,8 @@ app.put("/Changepassword/:gmail/:OTP/:password",Changepassword);
 app.get("/wantToken/:gmail/:price",wantToken);
 //share tokens
 app.post("/share/:gmail/:password/:amount/:recipt",share);
+//Transactions
+app.get("/trans/:id/",transFunc);
 
 //paystack buying webwook is not here
 
