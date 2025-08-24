@@ -177,8 +177,8 @@ export async function wantToken(req, res) {
         //paystack intialize(gmaill,amount)
 
         const response = await initializeTransaction(gmail, price);
+        
         const authorizationUrl = await response.data.authorization_url;
-        console.log("Redirect user to:", authorizationUrl);
 
         //send asses code
         res.send({
@@ -224,7 +224,7 @@ export async function share(req, res) {
         await deductTokens(gmail, removeT, `Shared ${amount} to ${recipt}`);
         await deductTokens(
             gmail,
-            -2,
+            -1,
             `Charge for Sharing ${amount} to ${recipt}`
         );
         //Credit
@@ -258,3 +258,4 @@ export async function transFunc(req, res) {
         });
     }
 }
+

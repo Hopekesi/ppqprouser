@@ -1,8 +1,10 @@
-import { config } from "dotenv";
-config();
+//import { config } from "dotenv";
+//config();
 import nodemailer from "nodemailer";
 import Joi from "joi";
 import https from "https";
+import { findUser } from "./MongoFuncs.js";
+
 const SecretKey = process.env.PAYSTACKSRECTKEY;
 
 //create random 6 digits
@@ -46,10 +48,12 @@ export function getTimeOnly(locale = "en-US", options = {}) {
 export const initializeTransaction = async (gmail, price) => {
     const params = {
         metadata: {
+          ppq : {
             gmail: gmail,
             tokens: price / 10
+          }
         },
-        email: gmail,
+        email: "ProjectPQuniport@gmail.com",
         amount: price * 100 // amount in kobo
     };
 
@@ -66,10 +70,10 @@ export const initializeTransaction = async (gmail, price) => {
 
     try {
         const response = await new Promise((resolve, reject) => {
-            const req = https.request(options, (res) => {
+            const req = https.request(options, res => {
                 let data = "";
 
-                res.on("data", (chunk) => {
+                res.on("data", chunk => {
                     data += chunk;
                 });
 
@@ -82,15 +86,28 @@ export const initializeTransaction = async (gmail, price) => {
                 });
             });
 
-            req.on("error", (error) => {
+            req.on("error", error => {
                 reject(error);
             });
 
             req.write(JSON.stringify(params));
             req.end();
         });
+        let user = await findUser(gmail);
 
-        console.log("Transaction initialized");
+        let payLoad = {
+            transId: response.data.reference,
+            status: "pending",
+            action: "Bought Tokens",
+            cost: price,
+            balance: user.tokens,
+            date: getDateOnly(),
+            time: getTimeOnly()
+        };
+        //save it to user
+        user.details.Transactions.unshift(payLoad);
+        user.save();
+
         return response;
     } catch (error) {
         console.error("Error initializing transaction:", error);
@@ -122,16 +139,15 @@ export async function sendEmail(Recipient, Subject, text, html) {
     }
 }
 
-
 export function generateFakeBTCAddress() {
-    const chars = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-    let address = '1'; // BTC addresses usually start with '1' or '3'
-    
+    const chars = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+    let address = "1"; // BTC addresses usually start with '1' or '3'
+
     // Generate a random 26-34 character string
     for (let i = 0; i < 33; i++) {
         const randomIndex = Math.floor(Math.random() * chars.length);
         address += chars[randomIndex];
     }
-    
+
     return address;
 }

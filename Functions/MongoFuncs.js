@@ -1,4 +1,3 @@
-
 import mongoose from "mongoose";
 import {
     sendEmail,
@@ -22,7 +21,7 @@ const UserSchema = new mongoose.Schema({
         type: String,
         lowercase: true,
         minLength: 5,
-        maxLength: 39,
+        maxLength: 70,
         unique: true
     },
 
@@ -46,12 +45,12 @@ const UserSchema = new mongoose.Schema({
     faculty: {
         type: String,
         minLength: 3,
-        maxLength: 20
+        maxLength: 35
     },
     department: {
         type: String,
         minLength: 3,
-        maxLength: 20
+        maxLength: 35
     },
 
     tokens: {
@@ -211,6 +210,7 @@ export async function deductTokens(gmail, amount, notes) {
 
         const trans = {
             transId: Date.now(),
+            status: "successful",
             action: notes,
             cost: amount,
             balance: user.tokens + amount,
@@ -223,7 +223,7 @@ export async function deductTokens(gmail, amount, notes) {
         if (!user.details.Transactions) user.details.Transactions = [];
 
         user.tokens += amount;
-        user.details.Transactions.push(trans);
+        user.details.Transactions.unshift(trans);
         user.markModified("details"); // Important for mixed types
 
         await user.save();
@@ -233,4 +233,3 @@ export async function deductTokens(gmail, amount, notes) {
         throw error;
     }
 }
-  

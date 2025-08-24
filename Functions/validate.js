@@ -38,7 +38,7 @@ export function FormatUsers(req){
 //check if input is a String
 export function isString(variable) {
     // Validate that the input is a string with length 3-30
-    const { error } = Joi.string().min(3).max(30).validate(variable);
+    const { error } = Joi.string().min(3).max(70).validate(variable);
     if (error) {
         throw new Error(
             `Input (${variable}) must be a string of length > 3 and < 30 characters.`

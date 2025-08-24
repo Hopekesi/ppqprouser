@@ -1,75 +1,83 @@
-import { config } from 'dotenv';
-import express from "express";
-import severless from "serverless-http"; 
 
-import {connectDB} from './Functions/MongoFuncs.js';
+//import { config } from "dotenv";
+import express from "express";
+import serverless from "serverless-http";
+
+import { connectDB } from "./Functions/MongoFuncs.js";
 
 import {
-  signup,
-  login,
-  forgotPassword,
-  Changepassword,
-  wantToken,
-  auth,
-  share,
-  transFunc
+    signup,
+    login,
+    forgotPassword,
+    Changepassword,
+    wantToken,
+    auth,
+    share,
+    transFunc
 } from "./Functions/workers.js";
 
-config();
-
+//config();
 
 const app = express();
 app.use(express.json());
 app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*");
 
-  res.header('Access-Control-Allow-Origin', '*');
-
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  next();
+    res.header(
+        "Access-Control-Allow-Headers",
+        "Origin, X-Requested-With, Content-Type, Accept"
+    );
+    res.header(
+        "Access-Control-Allow-Methods",
+        "GET, POST, PUT, DELETE, OPTIONS"
+    );
+    next();
 });
 /*Security*/
 //cors origin
 
 //rate limit 15 request per minute
 
-
-app.get("/", (req, res) =>res.send("ProjectPQ+"));
+app.get("/", (req, res) => res.send("ProjectPQ+"));
 
 //starting
-app.post("/signup/:gmail/:password/:phone/:mate/:faculty/:department/:avatar", signup);
+app.post(
+    "/signup/:gmail/:password/:phone/:mate/:faculty/:department/:avatar",
+    signup
+);
 app.get("/login/:gmail/:password", login);
 
 //forgotpassword
-app.put("/forgotpassword/:gmail",forgotPassword);
-app.put("/Changepassword/:gmail/:OTP/:password",Changepassword);
-
+app.put("/forgotpassword/:gmail", forgotPassword);
+app.put("/Changepassword/:gmail/:OTP/:password", Changepassword);
 
 //tokens
-app.get("/wantToken/:gmail/:price",wantToken);
+app.get("/wantToken/:gmail/:price", wantToken);
 //share tokens
-app.post("/share/:gmail/:password/:amount/:recipt",share);
+app.post("/share/:gmail/:password/:amount/:recipt", share);
 //Transactions
-app.get("/trans/:id/",transFunc);
+app.get("/trans/:id/", transFunc);
 
 //paystack buying webwook is not here
 
 //dectuctor
-app.put("/auth/:gmail/:password/:request",auth);
+app.put("/auth/:gmail/:password/:request", auth);
 
 app.use((req, res) => {
     console.log("lost soul");
     res.send({
-       status:404,
+        status: 404,
         message: "wrong endpoint"
     });
 });
 
+/*
 
 app.listen(process.env.PORT, async () => {
-  await connectDB();
-  console.log(`http://localhost:${process.env.PORT}`);
-});  
+    await connectDB();
+    console.log(`http://localhost:${process.env.PORT}`);
+});
+*/
 
-
-//export const handler = severless(app);
+await connectDB();
+export const handler = serverless(app);
